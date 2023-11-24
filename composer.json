@@ -1,6 +1,8 @@
 {
   "name": "calledbythe4ire/gendiff",
-  "bin": ["bin/gendiff"],
+  "bin": [
+    "bin/gendiff"
+  ],
   "type": "library",
   "description": "Structure differences finder",
   "license": "MIT",
@@ -11,7 +13,10 @@
     "psr-4": {
       "Hexlet\\Code\\": "src",
       "Hexlet\\Code\\Tests\\": "tests"
-    }
+    },
+    "files": [
+      "src/Differ.php"
+    ]
   },
   "require": {
     "tightenco/collect": "^9.33",
