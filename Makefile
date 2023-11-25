@@ -18,4 +18,4 @@ test:
 	composer exec --verbose phpunit tests -- --coverage-clover build/logs/clover.xml
 
 genDiff:
-	./bin/gendiff tests/fixtures/file1.json tests/fixtures/file2.json
+	./bin/gendiff tests/fixtures/file1.yaml tests/fixtures/file2.yaml

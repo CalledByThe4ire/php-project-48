@@ -7,7 +7,7 @@ use Exception;
 /**
  * @throws Exception
  */
-function toJSON(array $array): string
+function stringify(array $array): string
 {
     $reduced = array_reduce($array, function ($acc, $record) {
         ['key' => $key, 'value' => $value, 'meta' => $meta] = $record;
@@ -18,7 +18,7 @@ function toJSON(array $array): string
                 $acc["+ {$key}"] = $value[1];
                 break;
             case 'unchanged':
-                $acc[$key] = $value;
+                $acc[str_repeat(' ', 2) . $key] = $value;
                 break;
             case 'added':
                 $acc["+ {$key}"] = $value;

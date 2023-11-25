@@ -39,7 +39,7 @@ $path1 = $argsDictionary['<firstFile>'];
 $path2 = $argsDictionary['<secondFile>'];
 
 try {
-    $diff = genDiff($path1, $path2, $format, $parcer);
+    $diff = genDiff($path1, $path2, $format = 'json');
 } catch (Exception $e) {
     $msg = sprintf("Error: %s\n", $e->getMessage());
     exit($msg);

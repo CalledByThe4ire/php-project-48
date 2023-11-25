@@ -18,7 +18,10 @@
       "src/Differ.php",
       "src/DiffGenerator/FindDifferences.php",
       "src/Utils/Sort.php",
-      "src/Utils/Stringify.php"
+      "src/Utils/Stringify.php",
+      "src/Parsers/JsonParser.php",
+      "src/Parsers/YamlParser.php",
+      "src/Parsers/ParserFactory.php"
     ]
   },
   "require": {
@@ -26,7 +29,8 @@
     "nesbot/carbon": "^2.64",
     "symfony/string": "^6.2",
     "phpstan/phpstan": "^1.9.2",
-    "docopt/docopt": "^1.0"
+    "docopt/docopt": "^1.0",
+    "symfony/yaml": "^5.4"
   },
   "require-dev": {
     "psy/psysh": "@stable",
