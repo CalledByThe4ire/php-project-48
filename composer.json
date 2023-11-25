@@ -1,5 +1,5 @@
 {
-  "name": "calledbythe4ire/gendiff",
+  "name": "hexlet/code",
   "bin": [
     "bin/gendiff"
   ],
@@ -11,11 +11,14 @@
   },
   "autoload": {
     "psr-4": {
-      "Hexlet\\Code\\": "src",
-      "Hexlet\\Code\\Tests\\": "tests"
+      "Differ\\Differ\\": "src",
+      "Differ\\Differ\\Tests\\": "tests"
     },
     "files": [
-      "src/Differ.php"
+      "src/Differ.php",
+      "src/DiffGenerator/FindDifferences.php",
+      "src/Utils/Sort.php",
+      "src/Utils/Stringify.php"
     ]
   },
   "require": {

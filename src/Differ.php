@@ -4,49 +4,49 @@ namespace Differ\Differ;
 
 use Exception;
 
+use function Differ\DiffGenerator\FindDifferences\getDifferences;
+use function Differ\Utils\Stringify\toJSON as toJSON;
+
 /**
  * @throws Exception
  */
-function genDiff(string $path1, string $path2): string
+function getFormatter(string $format): callable
 {
-    $array1 = json_decode(file_get_contents($path1), true);
-    $array2 = json_decode(file_get_contents($path2), true);
+    switch ($format) {
+        case 'json':
+            return fn ($arr) => toJSON($arr);
+        default:
+            throw new Exception("Unknown format: {$format}");
+    }
+}
 
-    ksort($array1);
-    ksort($array2);
+/**
+ * @throws Exception
+ */
+function getParcer(string $format): callable
+{
+    switch ($format) {
+        case 'json':
+            return fn ($json) => json_decode($json, true);
+        default:
+            throw new Exception("Unknown format: {$format}");
+    }
+}
 
-    $array1Keys = array_keys($array1);
-    $array2Keys = array_keys($array2);
+/**
+ * @throws Exception
+ */
+function genDiff(
+    string $path1,
+    string $path2,
+    string $format = 'json',
+): string {
+    $data1 = file_get_contents($path1);
+    $data2 = file_get_contents($path2);
+    $array1 = $data1 ? getParcer($format)($data1) : [];
+    $array2 = $data1 ? getParcer($format)($data2) : [];
 
-    $reduced = array_reduce(
-        array_values(array_unique(array_merge($array1Keys, $array2Keys))),
-        function ($acc, $key) use ($array1, $array1Keys, $array2, $array2Keys) {
-            if (in_array($key, $array1Keys) && in_array($key, $array2Keys)) {
-                if ($array1[$key] === $array2[$key]) {
-                    $acc[str_repeat(' ', 2) . $key] = $array1[$key];
-                } else {
-                    $acc["- {$key}"] = $array1[$key];
-                    $acc["+ {$key}"] = $array2[$key];
-                }
-            } elseif (in_array($key, $array1Keys) && !in_array($key, $array2Keys)) {
-                $acc["- {$key}"] = $array1[$key];
-            } elseif (!in_array($key, $array1Keys) && in_array($key, $array2Keys)) {
-                $acc["+ {$key}"] = $array2[$key];
-            }
+    $diff = getDifferences($array1, $array2);
 
-            return $acc;
-        },
-        []
-    );
-
-    $mapped = array_map(function ($key, $value) {
-        $paddedKey = str_repeat(' ', 3) . $key;
-        $normalizedValue = is_bool($value) ? ($value ? "true" : "false") : $value;
-
-        return "{$paddedKey}: {$normalizedValue}";
-    }, array_keys($reduced), $reduced);
-
-    $stringified = implode("\n", $mapped);
-
-    return "{" . "\n" . $stringified . "\n" . "}";
+    return getFormatter($format)($diff);
 }
