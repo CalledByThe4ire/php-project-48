@@ -24,8 +24,3 @@ jobs:
           coverageCommand: make test
           coverageLocations: ${{github.workplace}}/build/logs/clover.xml:clover
           debug: true
-
-    #   - name: Hexlet project check
-    #     uses: hexlet/project-action@release
-    #     with:
-    #         hexlet-id: ${{ secrets.HEXLET_ID }}
