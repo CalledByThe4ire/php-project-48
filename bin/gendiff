@@ -1,9 +1,9 @@
 #!/usr/bin/env php
-
 <?php
 
 $autoloadPath1 = __DIR__ . '/../../../autoload.php';
 $autoloadPath2 = __DIR__ . '/../vendor/autoload.php';
+
 if (file_exists($autoloadPath1)) {
     require_once $autoloadPath1;
 } else {
@@ -35,14 +35,14 @@ foreach ($args as $key => $value) {
 
 $format = $argsDictionary['--format'];
 
-$filepath1 = $argsDictionary['<firstFile>'];
-$filepath2 = $argsDictionary['<secondFile>'];
+$path1 = $argsDictionary['<firstFile>'];
+$path2 = $argsDictionary['<secondFile>'];
 
 try {
-    $diff = genDiff($filepath1, $filepath2, $format = 'stylish');
+    $differences = genDiff($path1, $path2, $format);
 } catch (Exception $e) {
     $msg = sprintf("Error: %s\n", $e->getMessage());
     exit($msg);
 }
 
-dump($diff);
+print_r($differences . "\n");

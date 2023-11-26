@@ -20,7 +20,7 @@ function genDiff(string $path1, string $path2, string $format = 'stylish'): stri
     $array2 = $parser2($path2);
 
     $diffs = getDifferences($array1, $array2);
-    dump($diffs);
+
     $formatter = getFormatter($format);
 
     return $formatter($diffs);
