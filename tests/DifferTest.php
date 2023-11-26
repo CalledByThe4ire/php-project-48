@@ -6,8 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Exception;
 
 use function Differ\DiffGenerator\FindDifferences\getDifferences;
-use function Differ\Parsers\JsonParser\parse as JsonParser;
-use function Differ\Parsers\YamlParser\parse as YamlParser;
+use function Differ\Parsers\Factory\ParserFactory\getParser;
 
 class DifferTest extends TestCase
 {
@@ -18,16 +17,62 @@ class DifferTest extends TestCase
     {
 
         $this->array1 = [
-            "follow" => false,
-            "host" => "hexlet.io",
-            "proxy" => "123.234.53.22",
-            "timeout" => 50,
+            "common" =>  [
+                "setting1" => "Value 1",
+                "setting2" => 200,
+                "setting3" => true,
+                "setting6" =>  [
+                    "key" => "value",
+                    "doge" => [
+                        "wow" => ""
+                    ],
+                ],
+            ],
+            "group1" =>  [
+                "baz" => "bas",
+                "foo" => "bar",
+                "nest" =>  [
+                    "key" => "value"
+                ],
+            ],
+            "group2" =>  [
+                "abc" => 12345,
+                "deep" =>  [
+                    "id" => 45,
+                ],
+            ],
         ];
 
         $this->array2 = [
-            "host" => "hexlet.io",
-            "timeout" => 20,
-            "verbose" => true,
+            "common" =>  [
+                "follow" => false,
+                "setting1" => "Value 1",
+                "setting3" => null,
+                "setting4" => "blah blah",
+                "setting5" =>  [
+                    "key5" => "value5",
+                ],
+                "setting6" =>  [
+                    "key" => "value",
+                    "ops" => "vops",
+                    "doge" =>  [
+                        "wow" => "so much"
+                    ],
+                ],
+            ],
+            "group1" =>  [
+                "foo" => "bar",
+                "baz" => "bars",
+                "nest" => "str",
+            ],
+            "group3" =>  [
+                "deep" =>  [
+                    "id" =>  [
+                        "number" => 45,
+                    ],
+                ],
+                "fee" => 100500
+            ],
         ];
     }
 
@@ -40,22 +85,10 @@ class DifferTest extends TestCase
         $filepath = 'tests/fixtures/file1';
 
         foreach ($extensions as $extension) {
-            switch ($extension) {
-                case 'json':
-                    $this->assertEqualsCanonicalizing(
-                        $this->array1,
-                        JsonParser($filepath . '.' . $extension)
-                    );
-                    break;
-                case 'yaml':
-                    $this->assertEqualsCanonicalizing(
-                        $this->array1,
-                        YamlParser($filepath . '.' . $extension)
-                    );
-                    break;
-                default:
-                    throw new Exception("Unknown format: {$extension}");
-            }
+            $this->assertEqualsCanonicalizing(
+                $this->array1,
+                getParser($extension)($filepath . '.' . $extension)
+            );
         }
     }
 
@@ -63,33 +96,155 @@ class DifferTest extends TestCase
     {
         $expected = [
             0 =>  [
-                "key" => "follow",
-                "value" => false,
-                "meta" => "removed",
+                "key" => "common",
+                "state" => "unchanged",
+                "value" =>  [
+                    0 =>  [
+                        "key" => "setting1",
+                        "state" => "unchanged",
+                        "value" => "Value 1",
+                    ],
+                    1 =>  [
+                        "key" => "setting2",
+                        "state" => "removed",
+                        "value" => 200,
+                    ],
+                    2 =>  [
+                        "key" => "setting3",
+                        "state" => "changed",
+                        "oldValue" => true,
+                        "newValue" => null,
+                    ],
+                    3 =>  [
+                        "key" => "setting6",
+                        "state" => "unchanged",
+                        "value" =>  [
+                            0 =>  [
+                                "key" => "key",
+                                "state" => "unchanged",
+                                "value" => "value",
+                            ],
+                            1 =>  [
+                                "key" => "doge",
+                                "state" => "unchanged",
+                                "value" =>  [
+                                    0 =>  [
+                                        "key" => "wow",
+                                        "state" => "changed",
+                                        "oldValue" => "",
+                                        "newValue" => "so much",
+                                    ],
+                                ],
+                            ],
+                            2 =>  [
+                                "key" => "ops",
+                                "state" => "added",
+                                "value" => "vops",
+                            ],
+                        ],
+                    ],
+                    4 =>  [
+                        "key" => "follow",
+                        "state" => "added",
+                        "value" => false,
+                    ],
+                    5 =>  [
+                        "key" => "setting4",
+                        "state" => "added",
+                        "value" => "blah blah",
+                    ],
+                    6 =>  [
+                        "key" => "setting5",
+                        "state" => "added",
+                        "value" =>  [
+                            0 =>  [
+                                "key" => "key5",
+                                "state" => "unchanged",
+                                "value" => "value5",
+                            ],
+                        ],
+                    ],
+                ],
             ],
             1 =>  [
-                "key" => "host",
-                "value" => "hexlet.io",
-                "meta" => "unchanged",
+                "key" => "group1",
+                "state" => "unchanged",
+                "value" =>  [
+                    0 =>  [
+                        "key" => "baz",
+                        "state" => "changed",
+                        "oldValue" => "bas",
+                        "newValue" => "bars",
+                    ],
+                    1 =>  [
+                        "key" => "foo",
+                        "state" => "unchanged",
+                        "value" => "bar",
+                    ],
+                    2 =>  [
+                        "key" => "nest",
+                        "state" => "changed",
+                        "oldValue" =>  [
+                            0 =>  [
+                                "key" => "key",
+                                "state" => "unchanged",
+                                "value" => "value",
+                            ],
+                        ],
+                        "newValue" => "str",
+                    ],
+                ],
             ],
             2 =>  [
-                "key" => "proxy",
-                "value" => "123.234.53.22",
-                "meta" => "removed",
+                "key" => "group2",
+                "state" => "removed",
+                "value" =>  [
+                    0 =>  [
+                        "key" => "abc",
+                        "state" => "unchanged",
+                        "value" => 12345,
+                    ],
+                    1 =>  [
+                        "key" => "deep",
+                        "state" => "unchanged",
+                        "value" =>  [
+                            0 =>  [
+                                "key" => "id",
+                                "state" => "unchanged",
+                                "value" => 45,
+                            ],
+                        ],
+                    ],
+                ],
             ],
             3 =>  [
-                "key" => "timeout",
+                "key" => "group3",
+                "state" => "added",
                 "value" =>  [
-                    0 => 50,
-                    1 => 20
+                    0 =>  [
+                        "key" => "deep",
+                        "state" => "unchanged",
+                        "value" =>  [
+                            0 =>  [
+                                "key" => "id",
+                                "state" => "unchanged",
+                                "value" =>  [
+                                    0 =>  [
+                                        "key" => "number",
+                                        "state" => "unchanged",
+                                        "value" => 45,
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    1 =>  [
+                        "key" => "fee",
+                        "state" => "unchanged",
+                        "value" => 100500,
+                    ],
                 ],
-                "meta" => "changed",
             ],
-            4 =>  [
-                "key" => "verbose",
-                "value" => true,
-                "meta" => "added",
-            ]
         ];
 
         $actual = getDifferences($this->array1, $this->array2);

@@ -2,45 +2,24 @@
 
 namespace Differ\Utils\Stringify;
 
-use Exception;
-
-/**
- * @throws Exception
- */
-function stringify(array $array): string
+function toString(mixed $value): string
 {
-    $reduced = array_reduce($array, function ($acc, $record) {
-        ['key' => $key, 'value' => $value, 'meta' => $meta] = $record;
+    $result = $value;
+    if ($value === true) {
+        $result = 'true';
+    }
 
-        switch ($meta) {
-            case 'changed':
-                $acc["- {$key}"] = $value[0];
-                $acc["+ {$key}"] = $value[1];
-                break;
-            case 'unchanged':
-                $acc[str_repeat(' ', 2) . $key] = $value;
-                break;
-            case 'added':
-                $acc["+ {$key}"] = $value;
-                break;
-            case 'removed':
-                $acc["- {$key}"] = $value;
-                break;
-            default:
-                throw new Exception("Unknown meta: {$meta}");
-        }
+    if ($value === false) {
+        $result = 'false';
+    }
 
-        return $acc;
-    }, []);
+    if ($value === null) {
+        $result = 'null';
+    }
 
-    $mapped = array_map(function ($key, $value) {
-        $paddedKey = str_repeat(' ', 3) . $key;
-        $normalizedValue = is_bool($value) ? ($value ? "true" : "false") : $value;
+    if (is_array($value)) {
+        $result = '[complex value]';
+    }
 
-        return "{$paddedKey}: {$normalizedValue}";
-    }, array_keys($reduced), $reduced);
-
-    $stringified = implode("\n", $mapped);
-
-    return "{" . "\n" . $stringified . "\n" . "}";
+    return (string) $result;
 }

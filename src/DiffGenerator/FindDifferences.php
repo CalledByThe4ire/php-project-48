@@ -2,32 +2,107 @@
 
 namespace Differ\DiffGenerator\FindDifferences;
 
-use function Differ\Utils\Sort\sort;
-
 function getDifferences(array $arr1, array $arr2): array
 {
-    $array1 = sort($arr1);
-    $array2 = sort($arr2);
-    $array1Keys = array_keys($array1);
-    $array2Keys = array_keys($array2);
+    $allKeys = array_merge(array_keys($arr1), array_keys($arr2));
+    $uniqueKeys = array_unique($allKeys);
+    $diffBuilder = [];
 
-    return array_reduce(
-        array_values(array_unique(array_merge($array1Keys, $array2Keys))),
-        function ($acc, $key) use ($array1, $array1Keys, $array2, $array2Keys) {
-            if (in_array($key, $array1Keys) && in_array($key, $array2Keys)) {
-                if ($array1[$key] === $array2[$key]) {
-                    $acc[] = ['key' => $key, 'value' => $array1[$key], 'meta' => 'unchanged'];
-                } else {
-                    $acc[] = ['key' => $key, 'value' => [$array1[$key], $array2[$key]], 'meta' => 'changed'];
-                }
-            } elseif (in_array($key, $array1Keys) && !in_array($key, $array2Keys)) {
-                $acc[] = ['key' => $key, 'value' => $array1[$key], 'meta' => 'removed'];
-            } elseif (!in_array($key, $array1Keys) && in_array($key, $array2Keys)) {
-                $acc[] = ['key' => $key, 'value' => $array2[$key], 'meta' => 'added'];
-            }
+    foreach ($uniqueKeys as $key) {
+        $keyState = getKeyState($arr1, $arr2, $key);
+        if ($keyState !== 'unchanged') {
+            $value = $keyState === 'added' ? $arr2[$key] : $arr1[$key];
+            $diffBuilder[] = generateMeta($keyState, $key, $value);
+            continue;
+        }
 
-            return $acc;
-        },
-        []
-    );
+        if ($arr2[$key] === $arr1[$key]) {
+            $diffBuilder[] = generateMeta('unchanged', $key, $arr1[$key]);
+            continue;
+        }
+
+        if (is_array($arr1[$key]) && is_array($arr2[$key])) {
+            $newValue = getDifferences($arr1[$key], $arr2[$key]);
+            $diffBuilder[] = generateMeta('unchanged', $key, $newValue);
+            continue;
+        }
+
+        $diffBuilder[] = generateMeta('changed', $key, [$arr1[$key], $arr2[$key]]);
+    }
+
+    return formatEntriesToMeta($diffBuilder);
+}
+
+function getKeyState(array $keys1, array $keys2, string $key): string
+{
+    if (!in_array($key, array_keys($keys2), true)) {
+        return 'removed';
+    }
+
+    if (!in_array($key, array_keys($keys1), true)) {
+        return 'added';
+    }
+
+    return 'unchanged';
+}
+
+function generateMeta(string $state, string $key, mixed $value): array
+{
+    if ($state !== 'changed') {
+        return ['key' => $key, 'state' => $state, 'value' => $value];
+    }
+
+    $oldValue = $value[0];
+    $newValue = $value[1];
+
+    return ['key' => $key, 'state' => $state,
+        'oldValue' => $oldValue, 'newValue' => $newValue];
+}
+
+function formatEntriesToMeta(array $diffs): array
+{
+    $keys = array_keys($diffs);
+    $result = [];
+
+    foreach ($keys as $key) {
+        $meta = $diffs[$key];
+        if (!is_array($meta)) {
+            $result[] = generateMeta('unchanged', $key, $meta);
+            continue;
+        }
+
+        if (!array_key_exists('state', $meta)) {
+            $newValue = formatEntriesToMeta($meta);
+            $result[] = generateMeta('unchanged', $key, $newValue);
+            continue;
+        }
+
+        $result[] = formatMetaValueToMeta($meta);
+    }
+
+    return $result;
+}
+
+function formatMetaValueToMeta(array $meta): array
+{
+    $key = $meta['key'];
+    if ($meta['state'] === 'changed') {
+        $oldValue = is_array($meta['oldValue'])
+            ? formatEntriesToMeta($meta['oldValue'])
+            : $meta['oldValue'];
+
+        $newValue = is_array($meta['newValue'])
+            ? formatEntriesToMeta($meta['newValue'])
+            : $meta['newValue'];
+
+        return generateMeta('changed', $key, [$oldValue, $newValue]);
+    }
+
+    if (is_array($meta['value'])) {
+        $newValue = formatEntriesToMeta($meta['value']);
+
+        return generateMeta($meta['state'], $key, $newValue);
+    }
+
+    return generateMeta($meta['state'], $key, $meta['value']);
 }

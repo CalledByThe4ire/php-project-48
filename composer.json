@@ -17,11 +17,15 @@
     "files": [
       "src/Differ.php",
       "src/DiffGenerator/FindDifferences.php",
-      "src/Utils/Sort.php",
-      "src/Utils/Stringify.php",
       "src/Parsers/JsonParser.php",
       "src/Parsers/YamlParser.php",
-      "src/Parsers/ParserFactory.php"
+      "src/Parsers/Factory/ParserFactory.php",
+      "src/Formatters/Factory/FormatterFactory.php",
+      "src/Formatters/StylishFormatter.php",
+      "src/Formatters/PlainFormatter.php",
+      "src/Formatters/JsonFormatter.php",
+      "src/Utils/Stringify.php",
+      "src/Utils/Sort.php"
     ]
   },
   "require": {

@@ -23,7 +23,7 @@ Usage:
 Options:
   -h --help                     Show this screen
   -v --version                  Show version
-  --format <fmt>                Report format [default: json]
+  --format <fmt>                Report format [default: stylish]
 DOC;
 
 $args = Docopt::handle($doc, array('version' => 'Gendiff 1.0'));
@@ -35,11 +35,11 @@ foreach ($args as $key => $value) {
 
 $format = $argsDictionary['--format'];
 
-$path1 = $argsDictionary['<firstFile>'];
-$path2 = $argsDictionary['<secondFile>'];
+$filepath1 = $argsDictionary['<firstFile>'];
+$filepath2 = $argsDictionary['<secondFile>'];
 
 try {
-    $diff = genDiff($path1, $path2, $format = 'json');
+    $diff = genDiff($filepath1, $filepath2, $format = 'stylish');
 } catch (Exception $e) {
     $msg = sprintf("Error: %s\n", $e->getMessage());
     exit($msg);
