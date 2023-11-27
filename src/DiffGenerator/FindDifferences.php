@@ -6,29 +6,22 @@ function getDifferences(array $arr1, array $arr2): array
 {
     $allKeys = array_merge(array_keys($arr1), array_keys($arr2));
     $uniqueKeys = array_unique($allKeys);
-    $diffBuilder = [];
 
-    foreach ($uniqueKeys as $key) {
+    $diffBuilder = array_reduce($uniqueKeys, function ($acc, $key) use ($arr1, $arr2) {
         $keyState = getKeyState($arr1, $arr2, $key);
+
         if ($keyState !== 'unchanged') {
             $value = $keyState === 'added' ? $arr2[$key] : $arr1[$key];
-            $diffBuilder[] = generateMeta($keyState, $key, $value);
-            continue;
-        }
-
-        if ($arr2[$key] === $arr1[$key]) {
-            $diffBuilder[] = generateMeta('unchanged', $key, $arr1[$key]);
-            continue;
-        }
-
-        if (is_array($arr1[$key]) && is_array($arr2[$key])) {
+            return [...$acc, generateMeta($keyState, $key, $value)];
+        } elseif ($arr2[$key] === $arr1[$key]) {
+            return [...$acc, generateMeta('unchanged', $key, $arr1[$key])];
+        } elseif (is_array($arr1[$key]) && is_array($arr2[$key])) {
             $newValue = getDifferences($arr1[$key], $arr2[$key]);
-            $diffBuilder[] = generateMeta('unchanged', $key, $newValue);
-            continue;
+            return [...$acc, generateMeta('unchanged', $key, $newValue)];
         }
 
-        $diffBuilder[] = generateMeta('changed', $key, [$arr1[$key], $arr2[$key]]);
-    }
+        return [...$acc, generateMeta('changed', $key, [$arr1[$key], $arr2[$key]])];
+    }, []);
 
     return formatEntriesToMeta($diffBuilder);
 }
@@ -55,32 +48,26 @@ function generateMeta(string $state, string $key, mixed $value): array
     $oldValue = $value[0];
     $newValue = $value[1];
 
-    return ['key' => $key, 'state' => $state,
-        'oldValue' => $oldValue, 'newValue' => $newValue];
+    return [
+        'key' => $key, 'state' => $state,
+        'oldValue' => $oldValue, 'newValue' => $newValue
+    ];
 }
 
 function formatEntriesToMeta(array $diffs): array
 {
-    $keys = array_keys($diffs);
-    $result = [];
+    return array_reduce(array_keys($diffs), function ($acc, $key) use ($diffs) {
 
-    foreach ($keys as $key) {
         $meta = $diffs[$key];
         if (!is_array($meta)) {
-            $result[] = generateMeta('unchanged', $key, $meta);
-            continue;
-        }
-
-        if (!array_key_exists('state', $meta)) {
+            return [...$acc, generateMeta('unchanged', $key, $meta)];
+        } elseif (!array_key_exists('state', $meta)) {
             $newValue = formatEntriesToMeta($meta);
-            $result[] = generateMeta('unchanged', $key, $newValue);
-            continue;
+            return [...$acc, generateMeta('unchanged', $key, $newValue)];
         }
 
-        $result[] = formatMetaValueToMeta($meta);
-    }
-
-    return $result;
+        return [...$acc, formatMetaValueToMeta($meta)];
+    }, []);
 }
 
 function formatMetaValueToMeta(array $meta): array

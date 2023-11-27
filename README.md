@@ -46,3 +46,46 @@ make install
 ```sh
 make test
 ```
+
+Usage
+-----
+
+### [](https://github.com/CalledByThe4ire/gendiff#cli)CLI
+
+```source-shell
+# format plain
+$ ./gendiff --format plain path/to/file.yml another/path/file.json
+
+Property 'common.follow' was added with value: false
+Property 'group1.baz' was updated. From 'bas' to 'bars'
+Property 'group2' was removed
+
+# format by default (stylish)
+$ ./gendiff filepath1.json filepath2.json
+
+{
+  + follow: false
+    setting1: Value 1
+  - setting2: 200
+  - setting3: true
+  + setting3: {
+        key: value
+    }
+  + setting4: blah blah
+  + setting5: {
+        key5: value5
+    }
+}
+
+$ ./gendiff -h # for help
+```
+
+### [](https://github.com/CalledByThe4ire/gendiff#php-package-1)Php package
+
+```text-html-php
+use function Differ\Differ\genDiff;
+
+// formats: stylish (default), plain, json
+$diff = genDiff($pathToFile1, $pathToFile2, $format);
+print_r($diff);
+```

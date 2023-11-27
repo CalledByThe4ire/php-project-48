@@ -4,22 +4,16 @@ namespace Differ\Utils\Stringify;
 
 function toString(mixed $value): string
 {
-    $result = $value;
+
     if ($value === true) {
-        $result = 'true';
+        return 'true';
+    } elseif ($value === false) {
+        return 'false';
+    } elseif ($value === null) {
+        return 'null';
+    } elseif (is_array($value)) {
+        return '[complex value]';
     }
 
-    if ($value === false) {
-        $result = 'false';
-    }
-
-    if ($value === null) {
-        $result = 'null';
-    }
-
-    if (is_array($value)) {
-        $result = '[complex value]';
-    }
-
-    return (string) $result;
+    return $value;
 }
